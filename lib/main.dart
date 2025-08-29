@@ -23,8 +23,16 @@ class AlbumHelper {
   /// 获取所有相册里的第一张图片路径
   Future<String?> getFirstImagePath() async {
     // 请求权限
-    final PermissionState ps = await PhotoManager.requestPermissionExtend();
+    final PermissionState ps = await PhotoManager.requestPermissionExtend(
+      requestOption: const PermissionRequestOption(
+        androidPermission: AndroidPermission(
+          type: RequestType.image,
+          mediaLocation: false,
+        ),
+      ),
+    );
     if (!ps.isAuth) {
+      print('没有权限');
       return null; // 没有权限
     }
 
