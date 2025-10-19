@@ -17,6 +17,11 @@ class VirtualFileManager {
 
   late final MediaChangeObserver mediaChangeObserver;
 
+  Future<void> init() async {
+    mediaChangeObserver.registerObserver();
+    fileItemMapper.init();
+  }
+
   VirtualFolder createVirtualFolder() {
     throw UnimplementedError();
   }

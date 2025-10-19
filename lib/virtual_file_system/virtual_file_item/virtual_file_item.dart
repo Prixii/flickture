@@ -16,4 +16,6 @@ abstract class VirtualFileItem {
   void rename(String newName) {
     name = newName;
   }
+
+  bool get hasParent => parentId != null;
 }

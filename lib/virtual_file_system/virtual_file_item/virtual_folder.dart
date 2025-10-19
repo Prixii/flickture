@@ -10,11 +10,13 @@ class VirtualFolder extends VirtualFileItem {
     required super.id,
   }) : super(isDeleted: false);
 
-  bool addChild(VirtualFileItemId child) {
-    throw UnimplementedError();
+  bool addChild(VirtualFileItem child) {
+    child.parentId = id;
+    childrenId.add(child.id);
+    return true;
   }
 
-  bool addChildren(List<VirtualFileItemId> children) {
+  bool addChildren(List<VirtualFileItem> children) {
     var result = true;
     for (final child in children) {
       if (!addChild(child)) {

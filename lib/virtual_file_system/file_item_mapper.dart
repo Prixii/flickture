@@ -7,6 +7,8 @@ class FileItemMapper {
   BiMap<LocalFileId, VirtualFileItemId> fileIdMap = BiMap();
   Map<VirtualFileItemId, VirtualFileItem> virtualFileItemMap = {};
 
+  Future<void> init() async {}
+
   LocalFileId? findLocalFileIdByVirtualFileItemId(VirtualFileItemId id) {
     return fileIdMap.getKey(id);
   }

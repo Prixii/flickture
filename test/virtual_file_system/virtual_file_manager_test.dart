@@ -167,6 +167,12 @@ class MockMediaChangeObserver implements MediaChangeObserver {
     throw UnimplementedError();
   }
 
+  @override
+  bool unregisterObserver() {
+    // TODO: implement unregisterObserver
+    throw UnimplementedError();
+  }
+
   void startWatching() {}
 
   void stopWatching() {}

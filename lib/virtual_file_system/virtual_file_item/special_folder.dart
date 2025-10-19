@@ -4,7 +4,10 @@ import 'package:flickture/virtual_file_system/virtual_file_system_typedef.dart';
 class TrashBin extends VirtualFolder {
   TrashBin({required super.id}) : super(name: '垃圾桶', parentId: null);
 
-  void purgeAll() {
+  // TODO: Implement purgeAll method
+  Future<void> purgeAll(
+    Future<bool> Function(VirtualFileItemId) purgeFunc,
+  ) async {
     throw UnimplementedError('purgeAll is not implemented');
   }
 
