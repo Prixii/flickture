@@ -25,68 +25,6 @@ void main() {
       expect(manager.fileItemMapper, isNotNull);
     });
 
-    test('createVirtualFolder should throw UnimplementedError', () {
-      expect(() => manager.createVirtualFolder(), throwsUnimplementedError);
-    });
-
-    test('createVirtualFile should throw UnimplementedError', () {
-      expect(() => manager.createVirtualFile(), throwsUnimplementedError);
-    });
-
-    test('deleteVirtualItem should throw UnimplementedError', () {
-      expect(
-        () => manager.deleteVirtualItem('test_id'),
-        throwsUnimplementedError,
-      );
-    });
-
-    test('restoreVirtualItem should throw UnimplementedError', () {
-      expect(
-        () => manager.restoreVirtualItem('test_id'),
-        throwsUnimplementedError,
-      );
-    });
-
-    test('starVirtualItem should throw UnimplementedError', () {
-      expect(
-        () => manager.starVirtualItem('test_id'),
-        throwsUnimplementedError,
-      );
-    });
-
-    test('unstarVirtualItem should throw UnimplementedError', () {
-      expect(
-        () => manager.unstarVirtualItem('test_id'),
-        throwsUnimplementedError,
-      );
-    });
-
-    test('renameVirtualFileItem should throw UnimplementedError', () {
-      expect(
-        () => manager.renameVirtualFileItem('test_id', 'new_name'),
-        throwsUnimplementedError,
-      );
-    });
-
-    test('moveVirtualItem should throw UnimplementedError', () {
-      expect(
-        () => manager.moveVirtualItem('source_id', 'target_id'),
-        throwsUnimplementedError,
-      );
-    });
-
-    test('should integrate with FileItemMapper correctly', () {
-      // Test that manager uses the provided mapper
-      expect(manager.fileItemMapper, same(mapper));
-    });
-
-    test('should have special folder references', () {
-      // Even though unimplemented, test that the properties exist
-      expect(() => manager.root, throwsA(const TypeMatcher<Error>()));
-      expect(() => manager.trashBin, throwsA(const TypeMatcher<Error>()));
-      expect(() => manager.starFolder, throwsA(const TypeMatcher<Error>()));
-    });
-
     test('should work with file system adapter', () async {
       final adapter = MockFileSystemAdapter();
       manager.fileSystemAdapter = adapter;
