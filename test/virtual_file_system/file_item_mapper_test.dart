@@ -12,7 +12,7 @@ void main() {
     });
 
     test('should initialize with empty collections', () {
-      expect(mapper.visibleFolders, isEmpty);
+      expect(mapper.visibleFoldersName, isEmpty);
       expect(mapper.fileIdMap.isEmpty, true);
       expect(mapper.virtualFileItemMap.isEmpty, true);
     });
@@ -42,19 +42,19 @@ void main() {
       final folderPath = '/storage/emulated/0/Pictures';
 
       // Since addVisibleFolder throws UnimplementedError, we'll test adding directly
-      mapper.visibleFolders.add(folderPath);
+      mapper.visibleFoldersName.add(folderPath);
 
-      expect(mapper.visibleFolders, contains(folderPath));
+      expect(mapper.visibleFoldersName, contains(folderPath));
     });
 
     test('should remove visible folder', () {
       final folderPath = '/storage/emulated/0/Downloads';
-      mapper.visibleFolders.add(folderPath);
+      mapper.visibleFoldersName.add(folderPath);
 
       // Since removeVisibleFolder throws UnimplementedError, we'll test removing directly
-      mapper.visibleFolders.remove(folderPath);
+      mapper.visibleFoldersName.remove(folderPath);
 
-      expect(mapper.visibleFolders, isNot(contains(folderPath)));
+      expect(mapper.visibleFoldersName, isNot(contains(folderPath)));
     });
 
     test('should get VirtualFileItem by ID', () {

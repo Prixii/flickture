@@ -1,6 +1,7 @@
 import 'package:flickture/virtual_file_system/exception/virtual_file_system_exception.dart';
 import 'package:flickture/virtual_file_system/file_item_mapper.dart';
 import 'package:flickture/virtual_file_system/file_system_adapter/file_system_adapter.dart';
+import 'package:flickture/virtual_file_system/media_change_observer/flickture_media_change_observer.dart';
 import 'package:flickture/virtual_file_system/media_change_observer/media_change_observer.dart';
 import 'package:flickture/virtual_file_system/virtual_file_item/special_folder.dart';
 import 'package:flickture/virtual_file_system/virtual_file_item/virtual_file.dart';
@@ -19,9 +20,25 @@ class VirtualFileManager {
   late final MediaChangeObserver mediaChangeObserver;
 
   Future<void> init() async {
+    mediaChangeObserver = FlicktureMediaChangeObserver();
+    fileItemMapper = FileItemMapper();
+    root = RootFolder(id: fileItemMapper.generateNewVirtualFileItemId());
+    fileItemMapper.registerVirtualFileItem(root);
+
+    trashBin = TrashBin(
+      id: fileItemMapper.generateNewVirtualFileItemId(),
+      purgeFunc: (_) async => true,
+      restoreFunc: (_) async => true,
+    );
+    fileItemMapper.registerVirtualFileItem(trashBin);
+
+    starFolder = StarFolder(id: fileItemMapper.generateNewVirtualFileItemId());
+    fileItemMapper.registerVirtualFileItem(starFolder);
+
     mediaChangeObserver.registerObserver();
-    fileItemMapper.init();
+    final virtualAlbums = await fileItemMapper.init();
     await root.init();
+    root.addChildren(virtualAlbums);
   }
 
   VirtualFolder createVirtualFolder(VirtualFileItemId parentId, String name) {
@@ -38,7 +55,7 @@ class VirtualFileManager {
     final newId = fileItemMapper.generateNewVirtualFileItemId();
     final newFolder = VirtualFolder(id: newId, name: name, parentId: parentId);
     parentFolder.addChild(newFolder);
-    fileItemMapper.addVirtualFileItem(newFolder);
+    fileItemMapper.registerVirtualFileItem(newFolder);
     return newFolder;
   }
 
@@ -61,7 +78,7 @@ class VirtualFileManager {
     final newId = fileItemMapper.generateNewVirtualFileItemId();
     final newFile = VirtualFile(id: newId, name: '', parentId: parentId);
     parentFolder.addChild(newFile);
-    fileItemMapper.addVirtualFileItem(newFile);
+    fileItemMapper.registerVirtualFileItem(newFile);
     return newFile;
   }
 

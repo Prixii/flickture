@@ -1,21 +1,99 @@
+import 'package:flickture/global.dart';
 import 'package:flickture/virtual_file_system/bi_map.dart';
 import 'package:flickture/virtual_file_system/exception/virtual_file_system_exception.dart';
+import 'package:flickture/virtual_file_system/virtual_file_item/virtual_file.dart';
 import 'package:flickture/virtual_file_system/virtual_file_item/virtual_file_item.dart';
+import 'package:flickture/virtual_file_system/virtual_file_item/virtual_folder.dart';
 import 'package:flickture/virtual_file_system/virtual_file_system_typedef.dart';
 import 'package:flickture/virtual_file_system/virtual_file_system_utils.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class FileItemMapper {
-  late final Set<String> visibleFolders;
+  late final Set<String> visibleFoldersName;
   late final BiMap<LocalFileId, VirtualFileItemId> fileIdMap;
   late final Map<VirtualFileItemId, VirtualFileItem> virtualFileItemMap;
 
   FileItemMapper() {
-    visibleFolders = {};
+    visibleFoldersName = {};
     fileIdMap = BiMap();
     virtualFileItemMap = {};
   }
 
-  Future<void> init() async {}
+  Future<List<VirtualFolder>> init() async {
+    final albums = await PhotoManager.getAssetPathList(type: RequestType.image);
+    if (albums.isEmpty) {
+      logger.warning("no albums");
+    }
+
+    final virtualFolders = <VirtualFolder>[];
+    for (final album in albums) {
+      if (album.name == 'Recent') continue;
+      visibleFoldersName.add(album.name);
+      final albumVirtualFolder = await initSingleAlbum(album);
+      virtualFolders.add(albumVirtualFolder);
+    }
+    return virtualFolders;
+  }
+
+  Future<List<VirtualFolder>> initFromFile() async {
+    throw UnimplementedError();
+  }
+
+  Future<VirtualFolder> initSingleAlbum(AssetPathEntity album) async {
+    final mediaCount = await album.assetCountAsync;
+    final mediaList = await album.getAssetListRange(start: 0, end: mediaCount);
+
+    final albumVirtualFolder = createNewVirtualFolder(name: album.name);
+    virtualFileItemMap[albumVirtualFolder.id] = albumVirtualFolder;
+
+    for (final media in mediaList) {
+      final originalFile = await media.originFile;
+      if (originalFile == null) {
+        continue;
+      }
+      try {
+        final mediaVirtualFile = createNewVirtualFile(
+          name: extractFileName(originalFile.path),
+          parentId: albumVirtualFolder.id,
+          localFileId: media.id,
+        );
+        virtualFileItemMap[mediaVirtualFile.id] = mediaVirtualFile;
+        albumVirtualFolder.addChild(mediaVirtualFile);
+      } catch (e) {
+        logger.warning(
+          'duplicate in album: ${album.name}, media: ${originalFile.path}',
+        );
+      }
+    }
+    return albumVirtualFolder;
+  }
+
+  VirtualFolder createNewVirtualFolder({String name = ''}) {
+    final virtualFolderId = generateNewVirtualFileItemId();
+    final virtualFolder = VirtualFolder(
+      name: name,
+      parentId: '',
+      id: virtualFolderId,
+    );
+    virtualFileItemMap[virtualFolderId] = virtualFolder;
+    return virtualFolder;
+  }
+
+  VirtualFile createNewVirtualFile({
+    String name = '',
+    VirtualFileItemId parentId = '',
+    LocalFileId localFileId = '',
+  }) {
+    final virtualFileId = generateNewVirtualFileItemId();
+    final virtualFile = VirtualFile(
+      name: name,
+      parentId: parentId,
+      id: virtualFileId,
+    );
+    virtualFileItemMap[virtualFileId] = virtualFile;
+    fileIdMap.put(localFileId, virtualFileId);
+    return virtualFile;
+  }
 
   LocalFileId? findLocalFileIdByVirtualFileItemId(VirtualFileItemId id) {
     return fileIdMap.getKey(id);
@@ -26,20 +104,20 @@ class FileItemMapper {
   }
 
   bool addVisibleFolder(String folderName) {
-    if (visibleFolders.contains(folderName)) {
+    if (visibleFoldersName.contains(folderName)) {
       return false;
     }
 
-    visibleFolders.add(folderName);
+    visibleFoldersName.add(folderName);
     return true;
   }
 
   bool removeVisibleFolder(String folderName) {
-    if (!visibleFolders.contains(folderName)) {
+    if (!visibleFoldersName.contains(folderName)) {
       return false;
     }
 
-    visibleFolders.remove(folderName);
+    visibleFoldersName.remove(folderName);
     return true;
   }
 
@@ -66,7 +144,7 @@ class FileItemMapper {
     return id;
   }
 
-  bool addVirtualFileItem(VirtualFileItem item) {
+  bool registerVirtualFileItem(VirtualFileItem item) {
     if (virtualFileItemMap.containsKey(item.id)) {
       return false;
     }

@@ -2,7 +2,7 @@ import 'package:flickture/global.dart';
 import 'package:flickture/virtual_file_system/file_system_adapter/file_system_adapter.dart';
 import 'package:flickture/virtual_file_system/virtual_file_item/virtual_file.dart';
 
-class AndroidFileSystemAdapter implements FileSystemAdapter {
+class FlicktureFileSystemAdapter implements FileSystemAdapter {
   @override
   Future<bool> deleteFile(String path) {
     logger.info('Deleting file: $path');

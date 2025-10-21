@@ -1,7 +1,7 @@
 import 'package:flickture/global.dart';
 import 'package:flickture/virtual_file_system/media_change_observer/media_change_observer.dart';
 
-class AndroidMediaChangeObserver implements MediaChangeObserver {
+class FlicktureMediaChangeObserver implements MediaChangeObserver {
   @override
   void localFileCreated(String filePath) {
     logger.info('Local file created: $filePath');
