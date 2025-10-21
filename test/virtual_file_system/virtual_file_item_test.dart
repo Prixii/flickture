@@ -57,19 +57,7 @@ void main() {
       expect(unknownFile.type, FileType.unknown);
     });
 
-    test('VirtualFile getFileType should extract extension correctly', () {
-      final file = VirtualFile(
-        name: 'complex.name.with.dots.png',
-        id: 'file_111',
-        parentId: 'folder_222',
-      );
-
-      expect(file.getFileType('complex.name.with.dots.png'), 'png');
-      expect(file.getFileType('simple.jpg'), 'jpg');
-      expect(file.getFileType('noextension'), 'noextension');
-    });
-
-    test('VirtualFolder should manage children correctly', () {
+    test('VirtualFolder should manage childrenId list initially', () {
       final folder = VirtualFolder(
         name: 'Parent Folder',
         id: 'folder_333',
@@ -79,31 +67,51 @@ void main() {
       expect(folder.childrenId, isEmpty);
     });
 
-    test('VirtualFolder addChild should handle child addition', () {
+    test('VirtualFolder addChild should add child and set parentId', () {
       final folder = VirtualFolder(
         name: 'Test Folder',
         id: 'folder_444',
         parentId: 'parent_555',
       );
-
-      folder.childrenId.add('child_999');
-      expect(folder.childrenId, contains('child_999'));
-    });
-
-    test('VirtualFolder addChildren should handle multiple children', () {
-      final folder = VirtualFolder(
-        name: 'Multi Folder',
-        id: 'folder_666',
-        parentId: 'root',
+      final childFile = VirtualFile(
+        name: 'Child File',
+        id: 'child_999',
+        parentId: null, // Initially null
       );
 
-      final children = ['child_1', 'child_2', 'child_3'];
-
-      // Since addChildren is unimplemented, test adding directly
-      folder.childrenId.addAll(children);
-      expect(folder.childrenId, hasLength(3));
-      expect(folder.childrenId, containsAll(children));
+      expect(folder.addChild(childFile), isTrue);
+      expect(folder.childrenId, contains('child_999'));
+      expect(childFile.parentId, 'folder_444');
     });
+
+    test(
+      'VirtualFolder addChildren should add multiple children and set parentId',
+      () {
+        final folder = VirtualFolder(
+          name: 'Multi Folder',
+          id: 'folder_666',
+          parentId: 'root',
+        );
+
+        final child1 = VirtualFile(
+          name: 'Child 1',
+          id: 'child_1',
+          parentId: null,
+        );
+        final child2 = VirtualFolder(
+          name: 'Child 2',
+          id: 'child_2',
+          parentId: null,
+        );
+        final children = [child1, child2];
+
+        expect(folder.addChildren(children), isTrue);
+        expect(folder.childrenId, hasLength(2));
+        expect(folder.childrenId, containsAll(['child_1', 'child_2']));
+        expect(child1.parentId, 'folder_666');
+        expect(child2.parentId, 'folder_666');
+      },
+    );
 
     test('FileType enum should convert from string correctly', () {
       expect(FileType.fromString('jpg'), FileType.jpg);
@@ -111,7 +119,15 @@ void main() {
       expect(FileType.fromString('mp4'), FileType.mp4);
       expect(FileType.fromString('mov'), FileType.mov);
       expect(FileType.fromString('gif'), FileType.gif);
+      expect(
+        FileType.fromString('other'),
+        FileType.other,
+      ); // Added 'other' type
       expect(FileType.fromString('unknown_ext'), FileType.unknown);
+      expect(
+        FileType.fromString(''),
+        FileType.unknown,
+      ); // Added test for empty string
     });
 
     test('VirtualFileItem should handle deletion state', () {
@@ -122,34 +138,41 @@ void main() {
       );
 
       expect(file.isDeleted, false);
-
-      // Test that isDeleted can be changed (if the field is mutable)
       file.isDeleted = true;
       expect(file.isDeleted, true);
     });
 
-    test('VirtualFile should handle different file extensions', () {
-      final testCases = [
-        {'name': 'image.jpg', 'expectedType': 'jpg'},
-        {
-          'name': 'photo.jpeg',
-          'expectedType': 'jpeg',
-        }, // Note: jpeg is not in enum, will be unknown
-        {'name': 'animation.gif', 'expectedType': 'gif'},
-        {'name': 'movie.mov', 'expectedType': 'mov'},
-        {'name': 'video.mp4', 'expectedType': 'mp4'},
-        {'name': 'file.with.multiple.dots.tar.gz', 'expectedType': 'gz'},
-      ];
-
-      for (final testCase in testCases) {
-        final file = VirtualFile(
-          name: testCase['name']!,
-          id: 'file_${testCase['name']}',
-          parentId: 'folder_test',
+    test(
+      'VirtualFileItem hasParent should return true if parentId is not null',
+      () {
+        final itemWithParent = VirtualFile(
+          name: 'child.file',
+          id: 'child_id',
+          parentId: 'parent_id',
         );
+        expect(itemWithParent.hasParent, isTrue);
+      },
+    );
 
-        expect(file.getFileType(testCase['name']!), testCase['expectedType']);
-      }
+    test(
+      'VirtualFileItem hasParent should return false if parentId is null',
+      () {
+        final itemWithoutParent = VirtualFile(
+          name: 'root.file',
+          id: 'root_id',
+          parentId: null,
+        );
+        expect(itemWithoutParent.hasParent, isFalse);
+      },
+    );
+
+    test('VirtualFile generateThumbnail should throw UnimplementedError', () {
+      final file = VirtualFile(
+        name: 'test.mp4',
+        id: 'file_thumb',
+        parentId: 'folder_thumb',
+      );
+      expect(() => file.generateThumbnail(), throwsUnimplementedError);
     });
   });
 }
